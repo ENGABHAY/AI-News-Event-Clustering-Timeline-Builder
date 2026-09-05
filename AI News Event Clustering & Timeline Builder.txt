@@ -1,0 +1,192 @@
+===========================================================
+PROJECT TASK: AI News Event Clustering & Timeline Builder
+===========================================================
+
+PROJECT DURATION:
+25 Days
+
+PROJECT LEVEL:
+Intermediate → Advanced
+
+PROJECT OVERVIEW:
+-----------------
+In today’s world, the same real-world event is reported by hundreds of news articles
+across different platforms and days. This makes it difficult to understand:
+
+- What the actual event is
+- How it evolved over time
+- What were the key milestones
+
+Your task is to build an AI-based system that automatically:
+1. Groups news articles into real-world events
+2. Builds a chronological timeline for each event
+3. Generates a short summary explaining the event evolution
+
+This project focuses on:
+- Natural Language Processing
+- Unsupervised Learning
+- Data understanding and storytelling
+
+This is NOT a chatbot project.
+
+-----------------------------------------------------------
+DATA REQUIREMENTS:
+-----------------------------------------------------------
+You must use a PUBLICLY AVAILABLE dataset.
+
+You may choose ONE of the following:
+- Kaggle: News Category Dataset
+- Kaggle: All The News Dataset
+- GDELT Dataset
+- NewsAPI (free tier)
+
+Minimum required fields:
+- Article Title
+- Article Description / Content
+- Published Date
+- Source (optional but recommended)
+
+-----------------------------------------------------------
+FUNCTIONAL REQUIREMENTS:
+-----------------------------------------------------------
+
+1. DATA INGESTION MODULE
+------------------------
+- Load news articles from CSV / JSON
+- Perform basic cleaning:
+  - Lowercasing
+  - Removing special characters
+  - Handling missing values
+- Convert date into a standard datetime format
+
+2. TEXT REPRESENTATION
+-----------------------
+- Convert articles into numerical representations using:
+  - Sentence embeddings (preferred)
+  OR
+  - TF-IDF (acceptable)
+
+- Clearly explain why you chose the method.
+
+3. EVENT CLUSTERING (CORE TASK)
+--------------------------------
+- Group articles into clusters where:
+  - Each cluster represents ONE real-world event
+- Use unsupervised clustering:
+  - KMeans / HDBSCAN / Agglomerative Clustering
+
+- You must:
+  - Justify the algorithm choice
+  - Decide the number of clusters (if required)
+  - Handle noisy or unrelated articles
+
+4. EVENT LABELING
+------------------
+- Assign a meaningful label to each cluster:
+  Example:
+  - “Russia–Ukraine Conflict”
+  - “OpenAI Product Launch”
+  - “Stock Market Crash”
+
+- Labels can be generated using:
+  - Frequent keywords
+  - Cluster summaries
+  - Rule-based logic
+
+5. EVENT TIMELINE CONSTRUCTION
+-------------------------------
+For EACH event cluster:
+- Sort articles by published date
+- Create a timeline showing:
+  - Event start
+  - Key developments
+  - Latest updates
+
+Timeline should clearly show how the event evolved over time.
+
+6. EVENT SUMMARY GENERATION
+----------------------------
+- Generate a short readable summary for each event:
+  Example:
+  “This event began in early March, gained global attention after X,
+   and saw major developments on Y and Z.”
+
+- You may use:
+  - Extractive summarization
+  - LLM-based summarization (optional)
+
+7. USER INTERFACE / OUTPUT
+--------------------------
+You must provide ONE of the following:
+- Streamlit dashboard
+OR
+- Well-structured notebook with visualizations
+
+Required outputs:
+- List of detected events
+- Timeline visualization for at least 3 major events
+- Event summaries
+- Option to view articles inside an event
+
+-----------------------------------------------------------
+NON-FUNCTIONAL REQUIREMENTS:
+-----------------------------------------------------------
+- Code must be modular and readable
+- Use proper variable names
+- Add comments where necessary
+- Avoid hardcoding values
+- Handle edge cases gracefully
+
+-----------------------------------------------------------
+DELIVERABLES:
+-----------------------------------------------------------
+1. Source Code (GitHub repository)
+2. README.md containing:
+   - Project overview
+   - Dataset details
+   - Architecture explanation
+   - How to run the project
+3. Sample outputs (screenshots or plots)
+4. Short explanation of:
+   - Challenges faced
+   - Design decisions
+   - Possible improvements
+
+-----------------------------------------------------------
+EVALUATION CRITERIA (100 MARKS):
+-----------------------------------------------------------
+- Data Understanding & Cleaning: 15
+- Clustering Logic & Correctness: 25
+- Timeline Construction: 20
+- Event Labeling & Summaries: 15
+- Code Quality & Structure: 15
+- Documentation & Explanation: 10
+
+-----------------------------------------------------------
+OPTIONAL ENHANCEMENTS (BONUS):
+-----------------------------------------------------------
+- Event importance ranking
+- Country-wise event visualization
+- Bias comparison across sources
+- Interactive timeline filters
+
+-----------------------------------------------------------
+IMPORTANT NOTES:
+-----------------------------------------------------------
+- Do NOT build a chatbot
+- Focus on EVENT STRUCTURE, not article retrieval
+- Quality of reasoning matters more than fancy UI
+- Simplicity with correctness is preferred
+
+-----------------------------------------------------------
+EXPECTED LEARNING OUTCOMES:
+-----------------------------------------------------------
+By completing this project, you should understand:
+- How to apply NLP in real-world unstructured data
+- How clustering helps discover hidden patterns
+- How AI can convert raw data into structured knowledge
+- How to design an end-to-end AI system
+
+===========================================================
+END OF TASK
+===========================================================
