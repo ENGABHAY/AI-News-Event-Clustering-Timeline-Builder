@@ -1,0 +1,154 @@
+NEWS EVENT CLUSTERING & SUMMARIZATION — COMPLETE WORKFLOW
+===========================================================
+(from raw dataset to running Streamlit app)
+
+
+PART 1 — PROJECT STRUCTURE
+===========================================================
+All 13 files live flat in one folder (no subfolders):
+
+  config.py              - PipelineConfig (shared settings)
+  data_loader.py          - Stage 1: load dataset (JSON/CSV)
+  data_cleaning.py        - Stage 2: nulls, duplicates, dtypes
+  feature_engineering.py  - Stage 4: build combined text field
+  embeddings.py           - Stage 5: SentenceTransformer embeddings (cached)
+  clustering.py           - Stage 6: UMAP + HDBSCAN
+  keyword_extraction.py   - Stage 7a: TF-IDF keywords per cluster
+  event_labeling.py       - Stage 7b: representative headline per cluster
+  event_table.py          - Stage 8: event-level table
+  summarization.py        - Stage 10: BART + Gemini summarization
+  export.py               - Stage 11: summarize + export top-N to CSV
+  pipeline.py             - NewsEventPipeline: wires all the above together
+  main.py                 - Streamlit dashboard
+
+
+PART 2 — ONE-TIME SETUP
+===========================================================
+
+1. Put all 13 .py files in one folder, e.g.:
+     C:\Users\ACER\Downloads\files\
+
+2. Create and activate a virtual environment:
+     cd C:\Users\ACER\Downloads\files
+     python -m venv venv
+     venv\Scripts\activate          (Windows)
+     source venv/bin/activate       (Mac/Linux)
+
+3. Install dependencies:
+     pip install streamlit pandas numpy scikit-learn sentence-transformers
+     pip install umap-learn hdbscan
+     pip install transformers torch sentencepiece
+     pip install nltk google-genai
+
+   Notes:
+   - BART is NOT a separate package. It ships inside "transformers" +
+     "torch" (BartForConditionalGeneration, BartTokenizer). The actual
+     model weights (~1.6GB) auto-download from Hugging Face the first
+     time summarize_event_bart() runs, and are cached locally after that.
+   - Gemini summarization needs a Gemini API key, entered in the sidebar
+     at runtime — not an installation step.
+
+
+PART 3 — RUNNING THE APP
+===========================================================
+
+  streamlit run main.py
+
+Opens a browser tab at http://localhost:8501
+
+
+PART 4 — WORKFLOW INSIDE THE APP
+===========================================================
+
+  Sidebar
+  -------
+  1. Upload dataset (.json lines-format or .csv)
+  2. Set UMAP / HDBSCAN parameters (or leave defaults)
+  3. Choose summarization method: BART (local) or Gemini (API key)
+  4. Click "Run pipeline (stages 1-8)"
+
+  What happens on click (main.py -> pipeline.py):
+
+    load_data()            Stage 1  - reads the file
+        |                            shows "Loaded N rows"
+        v
+    clean_data()            Stage 2  - drops nulls/dupes, parses dates
+        |                            shows "N rows remain after cleaning"
+        |                            (stops early with a clear error if 0)
+        v
+    feature_engineering()   Stage 4  - text = headline + description
+        v
+    generate_embeddings()   Stage 5  - SentenceTransformer, cached to
+        |                              cache/news_embeddings_<hash>.npy
+        |                              (hash = fingerprint of the actual
+        |                              dataset, so a different file never
+        |                              reuses another file's cache)
+        v
+    cluster_events()        Stage 6  - UMAP reduce -> HDBSCAN cluster
+        v
+    extract_keywords()      Stage 7a - TF-IDF top keywords per cluster
+        v
+    label_events()          Stage 7b - representative headline per cluster
+        v
+    build_event_table()     Stage 8  - one row per event
+
+  Result tabs
+  -----------
+  Overview    - KPIs + charts (category counts, articles over time,
+                top 10 largest events)
+  Events      - searchable event table
+  Summarize   - pick one event, generate a BART or Gemini summary on demand
+  Export      - summarize + download the top-N events as CSV
+
+
+PART 5 — ISSUES HIT DURING SETUP & HOW THEY WERE FIXED
+===========================================================
+(kept here for reference in case they resurface with a new dataset)
+
+1. TypeError: unhashable type: 'dict' (in drop_duplicates)
+   Cause : a column (e.g. authors) held dict/list values instead of
+           plain strings; drop_duplicates() can't hash dicts.
+   Fix   : data_cleaning.py stringifies any dict/list-valued column
+           before calling drop_duplicates().
+
+2. DateParseError: Unknown datetime string format
+   Cause : one or more rows had a corrupted 'date' field.
+   Fix   : data_cleaning.py now parses dates with errors="coerce"
+           (bad values become NaT) and drops only those rows,
+           instead of crashing the whole run.
+
+3. ValueError: Expected 2D array, got 1D array instead: array=[]
+   Cause : the dataset file was a single JSON object exported in
+           "columns" orientation (one dict per column, not one
+           JSON record per line). pd.read_json(path, lines=True)
+           misread it as a single malformed row, which then got
+           dropped by the date fix above, leaving 0 rows -> UMAP
+           received an empty array.
+   Fix   : data_loader.py now detects this "1 row full of dicts"
+           pattern and automatically falls back to reading the file
+           as a plain JSON object (lines=False). Also added an
+           explicit "0 rows loaded" error, and clustering.py now
+           raises a clear message instead of letting sklearn's
+           cryptic reshape error surface.
+
+4. Same empty-embeddings error resurfacing after the dataset was
+   fixed
+   Cause : the embedding cache file (cache/news_embeddings.npy) had
+           a fixed name, so a stale empty array from the earlier
+           failed run kept getting reused for the new, valid dataset.
+   Fix   : embeddings.py now derives the cache filename from a hash
+           of the dataset's own content, and double-checks the
+           cached array's row count matches the current data before
+           trusting it. A stale/mismatched cache can no longer be
+           silently reused.
+
+
+PART 6 — QUICK TROUBLESHOOTING CHECKLIST
+===========================================================
+  - "0 rows after cleaning"      -> inspect the raw file structure;
+                                     confirm it's real JSON-lines or CSV
+  - Embedding/clustering errors  -> delete the cache/ folder and re-run
+  - BART first run is slow       -> normal, it's downloading the model
+                                     (~1.6GB) once
+  - Gemini errors                -> check the API key and the model
+                                     name "gemini-3.6-flash" is current
